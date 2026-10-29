@@ -1,0 +1,7 @@
+# Greeps map: ship between two regions split by water walls with one gap each; tomatoes in a random region
+image signal_09_v019.png
+ship 389 243
+pile 39 165 128
+pile 35 271 79
+pile 30 445 119
+pile 6 361 515

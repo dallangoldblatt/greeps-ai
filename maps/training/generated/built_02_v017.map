@@ -1,0 +1,8 @@
+# Greeps map: dense braided maze with loops, ship in the middle, many routes to scattered piles
+image built_02_v017.png
+ship 309 257
+pile 50 727 297
+pile 40 727 157
+pile 30 612 522
+pile 12 517 117
+pile 10 162 362

@@ -1,0 +1,7 @@
+# Greeps map: Island ring around an inner lake with spokes and a central islet
+image terrain_10_v005.png
+ship 604 115
+pile 30 399 306
+pile 29 103 314
+pile 29 366 135
+pile 47 404 495

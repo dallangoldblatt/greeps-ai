@@ -1,0 +1,6 @@
+# Greeps map: serpentine switchbacks: ~3000px walk to piles at the bottom
+image puzzle_13.png
+ship 80 40
+pile 60 700 550
+pile 40 100 550
+pile 20 700 300

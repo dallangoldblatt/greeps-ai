@@ -1,0 +1,6 @@
+# Greeps map: ship sealed in a ring pocket with a single exit; piles scattered far outside
+image puzzle_01_v001.png
+ship 509 290
+pile 35 347 367
+pile 45 254 324
+pile 74 71 421

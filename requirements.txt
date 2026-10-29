@@ -1,0 +1,8 @@
+numpy>=2.0,<3
+scipy>=1.11,<2
+pillow>=10,<13
+cma>=4.0,<5          # policies/linear_cma
+matplotlib>=3.8,<4
+# policies/mlp_ppo and the GPU simulator. Install the CUDA build for your
+# GPU, e.g.: pip install torch --index-url https://download.pytorch.org/whl/cu130
+torch>=2.7

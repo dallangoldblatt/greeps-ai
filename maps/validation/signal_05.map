@@ -1,0 +1,11 @@
+# Greeps map: four arms with small piles that run out at different times plus one arm with a medium pile
+image signal_05.png
+ship 388 261
+pile 7 139 284
+pile 10 86 296
+pile 39 436 495
+pile 9 357 462
+pile 10 377 91
+pile 5 335 55
+pile 8 686 289
+pile 5 737 315

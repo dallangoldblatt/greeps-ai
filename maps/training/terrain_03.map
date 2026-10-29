@@ -1,0 +1,6 @@
+# Greeps map: Long winding peninsula forking to two tips; the richest pile is at the far tip
+image terrain_03.png
+ship 100 300
+pile 60 710 165
+pile 35 660 490
+pile 10 450 335

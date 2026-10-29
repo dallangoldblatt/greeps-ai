@@ -1,0 +1,7 @@
+# Greeps map: spiral corridor with the big piles at the centre; ship outside
+image puzzle_03_v007.png
+ship 715 480
+pile 40 420 256
+pile 29 468 253
+pile 27 757 250
+pile 16 628 554

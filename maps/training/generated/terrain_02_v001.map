@@ -1,0 +1,7 @@
+# Greeps map: Archipelago of islands joined by isthmuses; piles on distant islands
+image terrain_02_v001.png
+ship 601 201
+pile 38 201 403
+pile 37 134 153
+pile 27 329 148
+pile 20 571 502

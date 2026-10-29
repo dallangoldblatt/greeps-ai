@@ -1,0 +1,8 @@
+# Greeps map: grid of rooms joined by random doorways, ship in a room
+image built_03_v007.png
+ship 683 473
+pile 50 72 67
+pile 30 87 237
+pile 30 752 82
+pile 16 647 182
+pile 12 757 347

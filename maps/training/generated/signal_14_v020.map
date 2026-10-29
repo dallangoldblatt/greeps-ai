@@ -1,0 +1,5 @@
+# Greeps map: four quadrants in a ring linked by one gap each; ship in one, tomatoes in a random other
+image signal_14_v020.png
+ship 562 112
+pile 56 328 385
+pile 45 315 518

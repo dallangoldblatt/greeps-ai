@@ -1,0 +1,8 @@
+# Greeps map: six room-islands in a moat joined by narrow bridges, ship in one corner island
+image built_14.png
+ship 125 120
+pile 40 732 512
+pile 30 642 432
+pile 30 367 512
+pile 12 472 97
+pile 20 352 77

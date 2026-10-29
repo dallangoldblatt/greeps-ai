@@ -1,0 +1,6 @@
+# Greeps map: bottleneck: every greep squeezes through one 60px gap in a wall
+image puzzle_06.png
+ship 170 300
+pile 40 690 120
+pile 40 690 480
+pile 30 560 300

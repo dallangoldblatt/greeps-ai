@@ -1,0 +1,7 @@
+# Greeps map: Two rivers with fords at opposite ends; piles in all three zones
+image terrain_13_v002.png
+ship 684 469
+pile 30 666 99
+pile 40 430 278
+pile 50 145 104
+pile 30 126 450

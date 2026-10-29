@@ -1,0 +1,7 @@
+# Greeps map: mirror-symmetric lakes and piles around the ship
+image puzzle_07_v007.png
+ship 400 454
+pile 39 296 136
+pile 39 503 136
+pile 38 331 380
+pile 38 468 380

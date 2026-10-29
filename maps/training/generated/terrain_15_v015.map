@@ -1,0 +1,9 @@
+# Greeps map: Easy: broad headlands and bays, piles nearby around the ship
+image terrain_15_v015.png
+ship 425 464
+pile 42 43 380
+pile 42 115 208
+pile 34 227 360
+pile 34 367 272
+pile 22 503 352
+pile 8 475 496

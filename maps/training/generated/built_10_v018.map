@@ -1,0 +1,9 @@
+# Greeps map: wide-corridor labyrinth of large cells, ship in the middle, long winding routes
+image built_10_v018.png
+ship 399 279
+pile 50 67 132
+pile 30 307 212
+pile 30 382 82
+pile 30 707 157
+pile 16 722 317
+pile 16 672 527

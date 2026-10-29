@@ -1,0 +1,7 @@
+# Greeps map: archipelago of rectangular islands joined by narrow bridges; piles on remote leaf islands
+image puzzle_14.png
+ship 400 290
+pile 40 110 90
+pile 50 690 510
+pile 30 690 90
+pile 30 400 530

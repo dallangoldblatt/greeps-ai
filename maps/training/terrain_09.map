@@ -1,0 +1,8 @@
+# Greeps map: Fjords: deep sea inlets from the north; piles on the tongues of land between them
+image terrain_09.png
+ship 400 520
+pile 50 230 150
+pile 40 610 140
+pile 30 750 160
+pile 25 60 160
+pile 12 430 160

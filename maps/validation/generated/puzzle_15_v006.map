@@ -1,0 +1,9 @@
+# Greeps map: ship at centre of concentric rings with staggered gaps; piles between and beyond
+image puzzle_15_v006.png
+ship 414 292
+pile 29 423 440
+pile 24 284 340
+pile 22 389 78
+pile 11 33 440
+pile 13 716 204
+pile 12 692 497

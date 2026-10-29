@@ -1,0 +1,6 @@
+# Greeps map: open field but the piles hide in corner nooks with narrow mouths (some nooks empty)
+image puzzle_12_v006.png
+ship 400 265
+pile 28 46 32
+pile 37 712 92
+pile 39 751 568

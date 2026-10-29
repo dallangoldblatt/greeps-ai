@@ -1,0 +1,6 @@
+# Greeps map: lake touching an edge: ship and piles on opposite shores, route only around the far end
+image puzzle_10_v015.png
+ship 93 178
+pile 44 760 177
+pile 37 553 509
+pile 26 700 260

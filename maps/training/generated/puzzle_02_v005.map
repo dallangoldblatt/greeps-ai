@@ -1,0 +1,7 @@
+# Greeps map: long wall: piles on far side, the only gap is at one end or in the middle (detour)
+image puzzle_02_v005.png
+ship 221 218
+pile 34 645 53
+pile 38 536 79
+pile 33 691 216
+pile 10 390 257

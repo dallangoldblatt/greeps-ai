@@ -1,0 +1,7 @@
+# Greeps map: perfect maze, ship in bottom-left corner, piles at dead ends far along the unique path
+image built_01_v020.png
+ship 719 31
+pile 50 137 132
+pile 40 232 457
+pile 20 337 407
+pile 12 402 92

@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greeps Map Editor</title>
+<style>
+  :root {
+    --bg: #f4f1ec; --panel: #ffffff; --ink: #24211d; --muted: #6f685f;
+    --line: #ddd6cc; --accent: #2f5d9b; --accent-ink: #ffffff;
+    --bad: #b3261e; --warn: #9a6200; --good: #2e7d32;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1a18; --panel: #262421; --ink: #ece7df; --muted: #a49c90;
+      --line: #3a3733; --accent: #6f9ee0; --accent-ink: #10151c;
+      --bad: #ff8a80; --warn: #ffcc66; --good: #8bd48f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .app { display: flex; gap: 12px; padding: 12px; align-items: flex-start; }
+  aside { width: 300px; flex: none; display: flex; flex-direction: column; gap: 10px; }
+  main { flex: 1; min-width: 0; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  h1 { font-size: 15px; margin: 0 0 2px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+  .row:last-child { margin-bottom: 0; }
+  label { color: var(--muted); }
+  input[type=text], input[type=number], select {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 5px; padding: 4px 6px; font: inherit; }
+  input[type=number] { width: 64px; }
+  input[type=range] { flex: 1; }
+  button { background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+           border-radius: 5px; padding: 4px 8px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.on, button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .tools button { padding: 6px 2px; }
+  .kbd { color: var(--muted); font-size: 11px; }
+  .stage { overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  canvas { display: block; image-rendering: pixelated; cursor: crosshair; touch-action: none; }
+  .statusbar { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; min-height: 1.4em; }
+  .status { color: var(--muted); }
+  ul.checks { list-style: none; margin: 0; padding: 0; }
+  ul.checks li { padding: 2px 0; }
+  .bad { color: var(--bad); } .warn { color: var(--warn); } .good { color: var(--good); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; margin-bottom: 6px; }
+  .help { color: var(--muted); font-size: 12px; }
+  .help code { font-size: 11px; }
+  @media (max-width: 900px) { .app { flex-direction: column; } aside { width: 100%; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <section>
+      <h1>Greeps map editor</h1>
+      <div class="help">800 × 600. Draw water and land, place the ship and piles, then save to <code>maps/</code>.</div>
+    </section>
+
+    <section>
+      <h2>File</h2>
+      <div class="row">
+        <input type="text" id="name" placeholder="map name" style="flex:1">
+        <button class="primary" id="save">Save</button>
+      </div>
+      <div class="row">
+        <select id="mapList" style="flex:1"></select>
+        <button id="load">Load</button>
+      </div>
+      <div class="row">
+        <button id="prevMap" title="Load the previous map in the list">◀ Prev</button>
+        <button id="nextMap" title="Load the next map in the list">Next ▶</button>
+        <span class="kbd">names can include folders, e.g. training/my_map</span>
+      </div>
+      <div class="row">
+        <button id="new">New</button>
+        <button id="importButton" title="Any image; water = blue > 2 × red, scaled to 800 × 600">Import image…</button>
+        <input type="file" id="import" accept="image/*" hidden>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tools</h2>
+      <div class="tools" id="tools">
+        <button data-tool="brush" title="B">Brush</button>
+        <button data-tool="line" title="L">Line</button>
+        <button data-tool="rect" title="R">Rect</button>
+        <button data-tool="ellipse" title="E">Ellipse</button>
+        <button data-tool="fill" title="F">Fill</button>
+        <button data-tool="ship" title="S">Ship</button>
+        <button data-tool="pile" title="P">Pile</button>
+        <button data-tool="move" title="V">Move</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>Paint</label>
+        <button id="paintWater" class="on">Water</button>
+        <button id="paintLand">Land</button>
+        <span class="kbd">right-click = opposite</span>
+      </div>
+      <div class="row">
+        <label>Size</label>
+        <input type="range" id="size" min="2" max="160" value="24">
+        <span id="sizeVal">24</span>
+      </div>
+      <div class="row">
+        <label>New pile</label>
+        <input type="number" id="pileCount" value="40" min="1" max="500">
+        <label>Selected</label>
+        <input type="number" id="selCount" min="1" max="500" disabled>
+      </div>
+      <div class="row">
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
+        <label><input type="checkbox" id="showGrid"> grid</label>
+        <label><input type="checkbox" id="showReach" checked> reach</label>
+        <label><input type="checkbox" id="showThin" checked> thin</label>
+      </div>
+      <div class="row">
+        <label>Zoom</label>
+        <select id="zoom"><option>50</option><option>75</option><option selected>100</option><option>125</option><option>150</option></select>
+        <label><input type="checkbox" id="mirrorX"> mirror ↔</label>
+        <label><input type="checkbox" id="mirrorY"> mirror ↕</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Generate</h2>
+      <div class="row">
+        <button data-gen="clear">All land</button>
+        <button data-gen="flood">All water</button>
+        <button data-gen="invert">Invert</button>
+        <button data-gen="border">Border</button>
+      </div>
+      <div class="row">
+        <button data-gen="maze">Maze</button>
+        <button data-gen="rooms">Rooms</button>
+        <button data-gen="zigzag">Zigzag</button>
+        <button data-gen="rings">Rings</button>
+      </div>
+      <div class="row">
+        <button data-gen="lakes">Lakes</button>
+        <button data-gen="islands">Islands</button>
+        <button data-gen="mirrorLR">Mirror L→R</button>
+        <button data-gen="mirrorTB">Mirror T→B</button>
+      </div>
+      <div class="row">
+        <label>Cell</label><input type="number" id="genCell" value="100" min="30" max="300">
+        <label>Wall</label><input type="number" id="genWall" value="16" min="4" max="120">
+      </div>
+      <div class="row">
+        <label>Openness</label><input type="range" id="genOpen" min="0" max="100" value="15">
+        <span id="genOpenVal">15%</span>
+      </div>
+      <div class="row">
+        <button data-gen="randomPiles">Random piles</button>
+        <button data-gen="randomShip">Random ship</button>
+        <label>piles</label><input type="number" id="genPiles" value="5" min="1" max="12">
+      </div>
+    </section>
+
+    <section>
+      <h2>Check</h2>
+      <div class="stats" id="stats"></div>
+      <ul class="checks" id="checks"></ul>
+    </section>
+
+    <section class="help">
+      Click/drag to draw. Ship: click to place (greeps appear 30 px below it).
+      Pile: click to add, drag to move, right-click or Delete to remove.
+      Greeps step 5 px and only test the pixel they land on, so water thinner
+      than ~6 px can be walked over ("thin" overlay).
+      Keys: B L R E F S P V, [ ] size, X swap paint, Ctrl+Z / Ctrl+Y.
+      <br><br>Use: <code>python -m policies.mlp_ppo.train --custom-maps maps</code>,
+      <code>python -m tools.evaluate --maps maps</code>.
+    </section>
+  </aside>
+
+  <main>
+    <div class="stage"><canvas id="canvas" width="800" height="600"></canvas></div>
+    <div class="statusbar"><span class="status" id="status"></span><span id="coords" class="kbd"></span></div>
+  </main>
+</div>
+
+<script>
+"use strict";
+const W = 800, H = 600;
+const SHIP_W = 110, SHIP_H = 56, PILE = 33, SPAWN_DY = 30, MAX_PILES = 12;
+const WATER_RGB = [40, 70, 160], LAND_RGB = [235, 215, 190];
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const $ = id => document.getElementById(id);
+
+let mask = new Uint8Array(W * H);          // 1 = water
+let ship = null;                           // {x, y}
+let piles = [];                            // [{x, y, n}]
+let selected = -1;                         // pile index, or -2 for ship
+let tool = "brush", paintWater = true;
+let reach = null, thin = null;
+let undoStack = [], redoStack = [];
+let drag = null, cursor = null;
+
+const baseCanvas = document.createElement("canvas");
+baseCanvas.width = W; baseCanvas.height = H;
+const baseCtx = baseCanvas.getContext("2d");
+const baseImage = baseCtx.createImageData(W, H);
+
+// ---------- state & history ----------
+function snapshot() {
+  return { mask: mask.slice(), ship: ship ? { ...ship } : null, piles: piles.map(p => ({ ...p })) };
+}
+let dirty = false;       // unsaved changes since the last load/save
+function pushUndo() {
+  dirty = true;
+  undoStack.push(snapshot());
+  if (undoStack.length > 60) undoStack.shift();
+  redoStack = [];
+}
+function restore(s) {
+  mask = s.mask.slice(); ship = s.ship ? { ...s.ship } : null;
+  piles = s.piles.map(p => ({ ...p })); selected = -1;
+  maskChanged();
+}
+function undo() { if (undoStack.length) { redoStack.push(snapshot()); restore(undoStack.pop()); } }
+function redo() { if (redoStack.length) { undoStack.push(snapshot()); restore(redoStack.pop()); } }
+
+// ---------- painting primitives ----------
+function setPx(x, y, v) {
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+  const xs = [x], ys = [y];
+  if ($("mirrorX").checked) xs.push(W - 1 - x);
+  if ($("mirrorY").checked) ys.push(H - 1 - y);
+  for (const a of xs) for (const b of ys) mask[b * W + a] = v;
+}
+function disc(cx, cy, r, v) {
+  const r2 = r * r;
+  for (let y = Math.floor(cy - r); y <= cy + r; y++)
+    for (let x = Math.floor(cx - r); x <= cx + r; x++)
+      if ((x - cx) ** 2 + (y - cy) ** 2 <= r2) setPx(x, y, v);
+}
+function stroke(x0, y0, x1, y1, r, v) {
+  const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / Math.max(1, r / 3)));
+  for (let i = 0; i <= n; i++) disc(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, r, v);
+}
+function rect(x0, y0, x1, y1, v) {
+  const a = Math.round(Math.min(x0, x1)), b = Math.round(Math.max(x0, x1));
+  const c = Math.round(Math.min(y0, y1)), d = Math.round(Math.max(y0, y1));
+  for (let y = Math.max(0, c); y <= Math.min(H - 1, d); y++)
+    for (let x = Math.max(0, a); x <= Math.min(W - 1, b); x++) setPx(x, y, v);
+}
+function ellipse(x0, y0, x1, y1, v) {
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rx = Math.abs(x1 - x0) / 2 || 1, ry = Math.abs(y1 - y0) / 2 || 1;
+  for (let y = Math.floor(cy - ry); y <= cy + ry; y++)
+    for (let x = Math.floor(cx - rx); x <= cx + rx; x++)
+      if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) setPx(x, y, v);
+}
+function floodFill(sx, sy, v) {
+  const start = mask[sy * W + sx];
+  if (start === v) return;
+  const stack = [sy * W + sx];
+  while (stack.length) {
+    const i = stack.pop();
+    if (mask[i] !== start) continue;
+    mask[i] = v;
+    const x = i % W;
+    if (x > 0) stack.push(i - 1);
+    if (x < W - 1) stack.push(i + 1);
+    if (i >= W) stack.push(i - W);
+    if (i < W * (H - 1)) stack.push(i + W);
+  }
+}
+
+// ---------- analysis ----------
+function computeReach() {
+  reach = null;
+  if (!ship) return;
+  const sx = ship.x, sy = ship.y + SPAWN_DY;
+  if (sx < 0 || sy < 0 || sx >= W || sy >= H || mask[sy * W + sx]) return;
+  reach = new Uint8Array(W * H);
+  const queue = new Int32Array(W * H);
+  let head = 0, tail = 0;
+  queue[tail++] = sy * W + sx; reach[sy * W + sx] = 1;
+  while (head < tail) {
+    const i = queue[head++], x = i % W;
+    const nb = [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W, i + W];
+    for (const j of nb) {
+      if (j < 0 || j >= W * H || reach[j] || mask[j]) continue;
+      reach[j] = 1; queue[tail++] = j;
+    }
+  }
+}
+function computeThin() {
+  // Water whose horizontal or vertical run is shorter than 6 px.
+  thin = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    let x = 0;
+    while (x < W) {
+      if (!mask[y * W + x]) { x++; continue; }
+      let e = x; while (e < W && mask[y * W + e]) e++;
+      if (e - x < 6 && x > 0 && e < W) for (let k = x; k < e; k++) thin[y * W + k] = 1;
+      x = e;
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    let y = 0;
+    while (y < H) {
+      if (!mask[y * W + x]) { y++; continue; }
+      let e = y; while (e < H && mask[e * W + x]) e++;
+      if (e - y < 6 && y > 0 && e < H) for (let k = y; k < e; k++) thin[k * W + x] = 1;
+      y = e;
+    }
+  }
+}
+function pileReachable(p) {
+  if (!reach) return false;
+  const r = Math.floor(PILE / 2) + 12;
+  for (let y = Math.max(0, p.y - r); y <= Math.min(H - 1, p.y + r); y++)
+    for (let x = Math.max(0, p.x - r); x <= Math.min(W - 1, p.x + r); x++)
+      if (reach[y * W + x]) return true;
+  return false;
+}
+
+// ---------- rendering ----------
+function renderBase() {
+  const d = baseImage.data, showReach = $("showReach").checked && reach, showThin = $("showThin").checked && thin;
+  for (let i = 0, o = 0; i < W * H; i++, o += 4) {
+    let c = mask[i] ? WATER_RGB : LAND_RGB, k = 1;
+    if (!mask[i] && showReach && !reach[i]) k = 0.62;
+    d[o] = c[0] * k; d[o + 1] = c[1] * k; d[o + 2] = c[2] * k; d[o + 3] = 255;
+    if (mask[i] && showThin && thin[i]) { d[o] = 255; d[o + 1] = 60; d[o + 2] = 200; }
+  }
+  baseCtx.putImageData(baseImage, 0, 0);
+}
+function maskChanged() {
+  computeReach(); computeThin(); renderBase(); updateChecks(); draw();
+}
+function objectsChanged() {
+  computeReach(); renderBase(); updateChecks(); draw();
+}
+
+function draw() {
+  ctx.drawImage(baseCanvas, 0, 0);
+  if ($("showGrid").checked) {
+    ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 1;
+    for (let x = 50; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, H); ctx.stroke(); }
+    for (let y = 50; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(W, y + .5); ctx.stroke(); }
+  }
+  if (ship) {
+    ctx.fillStyle = "rgba(60,60,70,0.35)";
+    ctx.fillRect(ship.x - SHIP_W / 2, ship.y - SHIP_H / 2, SHIP_W, SHIP_H);
+    ctx.strokeStyle = selected === -2 ? "#ffd400" : "#222"; ctx.lineWidth = 2;
+    ctx.strokeRect(ship.x - SHIP_W / 2, ship.y - SHIP_H / 2, SHIP_W, SHIP_H);
+    ctx.fillStyle = "#222"; ctx.font = "bold 12px system-ui"; ctx.textAlign = "center";
+    ctx.fillText("SHIP", ship.x, ship.y + 4);
+    ctx.beginPath(); ctx.arc(ship.x, ship.y + SPAWN_DY, 5, 0, 7);
+    ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = "#222"; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  piles.forEach((p, i) => {
+    const ok = pileReachable(p);
+    ctx.fillStyle = ok ? "#d32f2f" : "#5a1010";
+    ctx.fillRect(p.x - PILE / 2, p.y - PILE / 2, PILE, PILE);
+    ctx.strokeStyle = i === selected ? "#ffd400" : (ok ? "#7a1111" : "#ff5252");
+    ctx.lineWidth = i === selected ? 3 : 2;
+    ctx.strokeRect(p.x - PILE / 2, p.y - PILE / 2, PILE, PILE);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 12px system-ui"; ctx.textAlign = "center";
+    ctx.fillText(String(p.n), p.x, p.y + 4);
+    if (!ok) { ctx.strokeStyle = "#ff5252"; ctx.beginPath(); ctx.moveTo(p.x - 20, p.y - 20); ctx.lineTo(p.x + 20, p.y + 20); ctx.moveTo(p.x + 20, p.y - 20); ctx.lineTo(p.x - 20, p.y + 20); ctx.stroke(); }
+  });
+  // Previews
+  const r = +$("size").value / 2;
+  ctx.lineWidth = 1.5; ctx.strokeStyle = paintWater ? "rgba(30,60,160,0.9)" : "rgba(140,90,20,0.9)";
+  if (drag && ["line", "rect", "ellipse"].includes(drag.tool)) {
+    const { x0, y0, x1, y1 } = drag;
+    ctx.beginPath();
+    if (drag.tool === "line") { ctx.lineWidth = 2 * r; ctx.lineCap = "round"; ctx.strokeStyle = paintWater ? "rgba(40,70,160,0.5)" : "rgba(235,215,190,0.7)"; ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); }
+    else if (drag.tool === "rect") ctx.rect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+    else ctx.ellipse((x0 + x1) / 2, (y0 + y1) / 2, Math.abs(x1 - x0) / 2 || 1, Math.abs(y1 - y0) / 2 || 1, 0, 0, 7);
+    ctx.stroke(); ctx.lineCap = "butt";
+  } else if (cursor && (tool === "brush" || tool === "line")) {
+    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, r, 0, 7); ctx.stroke();
+  }
+}
+
+// ---------- checks ----------
+function updateChecks() {
+  const water = mask.reduce((a, b) => a + b, 0) / (W * H);
+  const total = piles.reduce((a, p) => a + p.n, 0);
+  $("stats").innerHTML =
+    `<span>Water</span><span>${(water * 100).toFixed(1)}%</span>` +
+    `<span>Piles</span><span>${piles.length}</span>` +
+    `<span>Tomatoes</span><span>${total}</span>` +
+    `<span>Thin water px</span><span>${thin ? thin.reduce((a, b) => a + b, 0) : 0}</span>`;
+  const items = [];
+  if (!ship) items.push(["bad", "No ship placed."]);
+  else {
+    const sy = ship.y + SPAWN_DY;
+    if (sy >= H - 3 || ship.x < 3 || ship.x > W - 3) items.push(["bad", "Greeps would appear at the world edge."]);
+    else if (mask[sy * W + ship.x]) items.push(["bad", "Greeps appear on water (30 px below the ship)."]);
+  }
+  if (!piles.length) items.push(["bad", "No piles."]);
+  if (piles.length > MAX_PILES) items.push(["bad", `More than ${MAX_PILES} piles (GPU sim limit).`]);
+  const unreachable = piles.filter(p => !pileReachable(p)).length;
+  if (ship && reach && unreachable) items.push(["bad", `${unreachable} pile(s) not reachable on foot.`]);
+  const wet = piles.filter(p => mask[p.y * W + p.x]).length;
+  if (wet) items.push(["warn", `${wet} pile centre(s) on water.`]);
+  if (thin && thin.some(v => v)) items.push(["warn", "Some water is thin enough to step over (pink)."]);
+  if (!items.length) items.push(["good", "Looks playable."]);
+  $("checks").innerHTML = items.map(([c, t]) => `<li class="${c}">${t}</li>`).join("");
+}
+
+// ---------- input ----------
+function pos(e) {
+  const b = canvas.getBoundingClientRect();
+  return { x: Math.round((e.clientX - b.left) * W / b.width), y: Math.round((e.clientY - b.top) * H / b.height) };
+}
+function hitPile(p) {
+  for (let i = piles.length - 1; i >= 0; i--)
+    if (Math.abs(piles[i].x - p.x) <= PILE / 2 && Math.abs(piles[i].y - p.y) <= PILE / 2) return i;
+  return -1;
+}
+function hitShip(p) { return ship && Math.abs(ship.x - p.x) <= SHIP_W / 2 && Math.abs(ship.y - p.y) <= SHIP_H / 2; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function select(i) {
+  selected = i;
+  const box = $("selCount");
+  box.disabled = i < 0; box.value = i >= 0 ? piles[i].n : "";
+}
+
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("pointerdown", e => {
+  const p = pos(e), alt = e.button === 2;
+  const value = (paintWater !== alt) ? 1 : 0;
+  canvas.setPointerCapture(e.pointerId);
+  if (tool === "pile" || tool === "move" || tool === "ship") {
+    const i = hitPile(p);
+    if (alt && i >= 0) { pushUndo(); piles.splice(i, 1); select(-1); objectsChanged(); return; }
+    if (i >= 0) { pushUndo(); select(i); drag = { tool: "movePile", i }; draw(); return; }
+    if (hitShip(p) && tool !== "pile") { pushUndo(); select(-2); drag = { tool: "moveShip", dx: ship.x - p.x, dy: ship.y - p.y }; draw(); return; }
+    if (tool === "pile" && !alt) {
+      pushUndo(); piles.push({ x: p.x, y: p.y, n: Math.max(1, +$("pileCount").value || 40) });
+      select(piles.length - 1); drag = { tool: "movePile", i: piles.length - 1 }; objectsChanged(); return;
+    }
+    if (tool === "ship" && !alt) { pushUndo(); ship = { x: clamp(p.x, 0, W - 1), y: clamp(p.y, 0, H - 1) }; select(-2); drag = { tool: "moveShip", dx: 0, dy: 0 }; objectsChanged(); return; }
+    select(-1); draw(); return;
+  }
+  pushUndo();
+  if (tool === "fill") { floodFill(clamp(p.x, 0, W - 1), clamp(p.y, 0, H - 1), value); maskChanged(); return; }
+  if (tool === "brush") { disc(p.x, p.y, +$("size").value / 2, value); drag = { tool, value, last: p }; renderBase(); draw(); return; }
+  drag = { tool, value, x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+});
+canvas.addEventListener("pointermove", e => {
+  const p = pos(e); cursor = p;
+  $("coords").textContent = `x ${p.x}, y ${p.y}` + (p.x >= 0 && p.y >= 0 && p.x < W && p.y < H ? (mask[p.y * W + p.x] ? " — water" : " — land") : "");
+  if (!drag) { draw(); return; }
+  if (drag.tool === "brush") {
+    stroke(drag.last.x, drag.last.y, p.x, p.y, +$("size").value / 2, drag.value);
+    drag.last = p; renderBase();
+  } else if (drag.tool === "movePile") {
+    piles[drag.i].x = clamp(p.x, 0, W - 1); piles[drag.i].y = clamp(p.y, 0, H - 1);
+  } else if (drag.tool === "moveShip") {
+    ship.x = clamp(p.x + drag.dx, 0, W - 1); ship.y = clamp(p.y + drag.dy, 0, H - 1);
+  } else { drag.x1 = p.x; drag.y1 = p.y; }
+  draw();
+});
+canvas.addEventListener("pointerleave", () => { cursor = null; if (!drag) draw(); });
+canvas.addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  const r = +$("size").value / 2;
+  if (d.tool === "line") stroke(d.x0, d.y0, d.x1, d.y1, r, d.value);
+  else if (d.tool === "rect") rect(d.x0, d.y0, d.x1, d.y1, d.value);
+  else if (d.tool === "ellipse") ellipse(d.x0, d.y0, d.x1, d.y1, d.value);
+  if (d.tool === "movePile" || d.tool === "moveShip") objectsChanged(); else maskChanged();
+});
+
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll("#tools button").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
+  canvas.style.cursor = (t === "move") ? "move" : "crosshair";
+  draw();
+}
+document.querySelectorAll("#tools button").forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
+function setPaint(water) {
+  paintWater = water;
+  $("paintWater").classList.toggle("on", water); $("paintLand").classList.toggle("on", !water);
+}
+$("paintWater").onclick = () => setPaint(true);
+$("paintLand").onclick = () => setPaint(false);
+$("size").oninput = () => { $("sizeVal").textContent = $("size").value; draw(); };
+$("genOpen").oninput = () => { $("genOpenVal").textContent = $("genOpen").value + "%"; };
+$("selCount").oninput = () => { if (selected >= 0) { piles[selected].n = Math.max(1, +$("selCount").value || 1); updateChecks(); draw(); } };
+$("undo").onclick = undo; $("redo").onclick = redo;
+["showGrid", "showReach", "showThin"].forEach(id => $(id).onchange = () => { renderBase(); draw(); });
+$("zoom").onchange = () => { canvas.style.width = (W * $("zoom").value / 100) + "px"; };
+$("zoom").onchange();
+
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && k === "y") { e.preventDefault(); redo(); return; }
+  const map = { b: "brush", l: "line", r: "rect", e: "ellipse", f: "fill", s: "ship", p: "pile", v: "move" };
+  if (map[k]) setTool(map[k]);
+  if (k === "x") setPaint(!paintWater);
+  if (k === "[" || k === "]") { const s = $("size"); s.value = clamp(+s.value + (k === "]" ? 4 : -4), 2, 160); s.oninput(); }
+  if ((k === "delete" || k === "backspace") && selected >= 0) { pushUndo(); piles.splice(selected, 1); select(-1); objectsChanged(); }
+});
+
+// ---------- generators ----------
+function rnd(n) { return Math.floor(Math.random() * n); }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function valueNoise(cells) {
+  // Smooth random field in [0, 1] from bilinear-interpolated random grids.
+  const out = new Float32Array(W * H);
+  for (const [c, amp] of [[cells, 1], [cells * 2, 0.5], [cells * 4, 0.25]]) {
+    const gw = Math.ceil(W / c) + 2, gh = Math.ceil(H / c) + 2;
+    const g = Float32Array.from({ length: gw * gh }, Math.random);
+    for (let y = 0; y < H; y++) {
+      const fy = y / c, iy = Math.floor(fy), ty = fy - iy, sy = ty * ty * (3 - 2 * ty);
+      for (let x = 0; x < W; x++) {
+        const fx = x / c, ix = Math.floor(fx), tx = fx - ix, sx = tx * tx * (3 - 2 * tx);
+        const a = g[iy * gw + ix], b = g[iy * gw + ix + 1], cc = g[(iy + 1) * gw + ix], d = g[(iy + 1) * gw + ix + 1];
+        out[y * W + x] += amp * ((a * (1 - sx) + b * sx) * (1 - sy) + (cc * (1 - sx) + d * sx) * sy);
+      }
+    }
+  }
+  return out;
+}
+function thresholdTop(field, fraction) {
+  const sorted = Float32Array.from(field.filter((_, i) => i % 7 === 0)).sort();
+  const t = sorted[Math.floor((1 - fraction) * (sorted.length - 1))];
+  for (let i = 0; i < W * H; i++) mask[i] = field[i] > t ? 1 : 0;
+}
+
+const generators = {
+  clear() { mask.fill(0); },
+  flood() { mask.fill(1); },
+  invert() { for (let i = 0; i < W * H; i++) mask[i] ^= 1; },
+  border() {
+    const t = +$("genWall").value;
+    rect(0, 0, W - 1, t - 1, 1); rect(0, H - t, W - 1, H - 1, 1);
+    rect(0, 0, t - 1, H - 1, 1); rect(W - t, 0, W - 1, H - 1, 1);
+  },
+  maze() {
+    // Recursive backtracker on a grid of cells; walls are water.
+    const c = +$("genCell").value, wall = +$("genWall").value, open = +$("genOpen").value / 100;
+    const cols = Math.max(2, Math.floor(W / c)), rows = Math.max(2, Math.floor(H / c));
+    const cw = W / cols, ch = H / rows;
+    const right = Array.from({ length: rows }, () => Array(cols).fill(true));
+    const down = Array.from({ length: rows }, () => Array(cols).fill(true));
+    const seen = Array.from({ length: rows }, () => Array(cols).fill(false));
+    const stack = [[rnd(rows), rnd(cols)]]; seen[stack[0][0]][stack[0][1]] = true;
+    while (stack.length) {
+      const [r, q] = stack[stack.length - 1];
+      const nb = shuffle([[r - 1, q], [r + 1, q], [r, q - 1], [r, q + 1]])
+        .filter(([a, b]) => a >= 0 && b >= 0 && a < rows && b < cols && !seen[a][b]);
+      if (!nb.length) { stack.pop(); continue; }
+      const [a, b] = nb[0];
+      if (a === r) right[r][Math.min(q, b)] = false; else down[Math.min(r, a)][q] = false;
+      seen[a][b] = true; stack.push([a, b]);
+    }
+    mask.fill(0);
+    const h = wall / 2;
+    for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
+      if (q < cols - 1 && right[r][q] && Math.random() >= open) rect(Math.round((q + 1) * cw - h), Math.round(r * ch - h), Math.round((q + 1) * cw + h), Math.round((r + 1) * ch + h), 1);
+      if (r < rows - 1 && down[r][q] && Math.random() >= open) rect(Math.round(q * cw - h), Math.round((r + 1) * ch - h), Math.round((q + 1) * cw + h), Math.round((r + 1) * ch + h), 1);
+    }
+  },
+  rooms() {
+    // Rooms of land in water, chained by corridors of width "Wall".
+    const n = 5 + rnd(4), corridor = Math.max(8, +$("genWall").value), rooms = [];
+    mask.fill(1);
+    for (let k = 0; k < n * 4 && rooms.length < n; k++) {
+      const w = 80 + rnd(160), h = 70 + rnd(130), x = 10 + rnd(W - w - 20), y = 10 + rnd(H - h - 20);
+      if (rooms.some(o => x < o.x + o.w + 20 && o.x < x + w + 20 && y < o.y + o.h + 20 && o.y < y + h + 20)) continue;
+      rooms.push({ x, y, w, h });
+    }
+    rooms.forEach(o => rect(o.x, o.y, o.x + o.w, o.y + o.h, 0));
+    rooms.sort((a, b) => (a.x + a.y) - (b.x + b.y));
+    for (let i = 1; i < rooms.length; i++) {
+      const a = rooms[i - 1], b = rooms[i];
+      const ax = a.x + a.w / 2, ay = a.y + a.h / 2, bx = b.x + b.w / 2, by = b.y + b.h / 2;
+      rect(ax, ay - corridor / 2, bx, ay + corridor / 2, 0);
+      rect(bx - corridor / 2, ay, bx + corridor / 2, by, 0);
+    }
+    if (Math.random() < +$("genOpen").value / 100 * 3 && rooms.length > 2) {
+      const a = rooms[0], b = rooms[rooms.length - 1];
+      stroke(a.x + a.w / 2, a.y + a.h / 2, b.x + b.w / 2, b.y + b.h / 2, corridor / 2, 0);
+    }
+  },
+  zigzag() {
+    // Parallel walls with alternating gaps: one long serpentine corridor.
+    const c = +$("genCell").value, wall = +$("genWall").value, gap = Math.max(40, c * 0.7);
+    const vertical = Math.random() < 0.5;
+    mask.fill(0);
+    const span = vertical ? W : H, len = vertical ? H : W;
+    for (let k = 1, p = c; p < span - c / 3; k++, p += c) {
+      const fromStart = k % 2 === 1;
+      const a = fromStart ? 0 : gap, b = fromStart ? len - gap : len;
+      if (vertical) rect(p - wall / 2, a, p + wall / 2, b, 1); else rect(a, p - wall / 2, b, p + wall / 2, 1);
+    }
+  },
+  rings() {
+    // Concentric water rings around the centre, each with a gap.
+    const c = +$("genCell").value, wall = +$("genWall").value, open = +$("genOpen").value / 100;
+    const cx = W / 2, cy = H / 2;
+    mask.fill(0);
+    for (let r = c; r < Math.hypot(W, H) / 2; r += c) {
+      const gapAt = Math.random() * Math.PI * 2, gapSize = 0.35 + open * 2;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const d = Math.hypot(x - cx, (y - cy) * W / H);
+        if (Math.abs(d - r) > wall / 2) continue;
+        let a = Math.atan2(y - cy, x - cx) - gapAt;
+        a = Math.atan2(Math.sin(a), Math.cos(a));
+        if (Math.abs(a) > gapSize / 2) mask[y * W + x] = 1;
+      }
+    }
+  },
+  lakes() { thresholdTop(valueNoise(+$("genCell").value * 2), 0.1 + +$("genOpen").value / 250); },
+  islands() {
+    thresholdTop(valueNoise(+$("genCell").value * 2), 0.55 + +$("genOpen").value / 400);
+  },
+  mirrorLR() { for (let y = 0; y < H; y++) for (let x = W / 2; x < W; x++) mask[y * W + x] = mask[y * W + (W - 1 - x)]; },
+  mirrorTB() { for (let y = H / 2; y < H; y++) for (let x = 0; x < W; x++) mask[y * W + x] = mask[(H - 1 - y) * W + x]; },
+  randomShip() {
+    for (let k = 0; k < 5000; k++) {
+      const x = 60 + rnd(W - 120), y = 30 + rnd(H - 100);
+      if (!mask[(y + SPAWN_DY) * W + x]) { ship = { x, y }; return; }
+    }
+  },
+  randomPiles() {
+    if (!ship) generators.randomShip();
+    computeReach();
+    const want = clamp(+$("genPiles").value, 1, MAX_PILES), sizes = [10, 12, 16, 30, 40, 50];
+    piles = [];
+    for (let k = 0; k < 20000 && piles.length < want; k++) {
+      const x = 20 + rnd(W - 40), y = 20 + rnd(H - 40);
+      if (mask[y * W + x] || (reach && !reach[y * W + x])) continue;
+      if (ship && Math.hypot(x - ship.x, y - ship.y) < 120) continue;
+      if (piles.some(p => Math.hypot(p.x - x, p.y - y) < 70)) continue;
+      piles.push({ x, y, n: sizes[rnd(sizes.length)] });
+    }
+  },
+};
+document.querySelectorAll("[data-gen]").forEach(b => b.addEventListener("click", () => {
+  // Generators draw the whole map themselves; drawing mirrors don't apply.
+  const mx = $("mirrorX").checked, my = $("mirrorY").checked;
+  $("mirrorX").checked = $("mirrorY").checked = false;
+  pushUndo(); generators[b.dataset.gen]();
+  $("mirrorX").checked = mx; $("mirrorY").checked = my;
+  select(-1); maskChanged();
+}));
+
+// ---------- files ----------
+function setStatus(text, cls) { const s = $("status"); s.textContent = text; s.className = "status " + (cls || ""); }
+
+function maskToPng() {
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), img = g.createImageData(W, H);
+  for (let i = 0, o = 0; i < W * H; i++, o += 4) {
+    const col = mask[i] ? WATER_RGB : LAND_RGB;
+    img.data[o] = col[0]; img.data[o + 1] = col[1]; img.data[o + 2] = col[2]; img.data[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return c.toDataURL("image/png");
+}
+function imageToMask(img) {
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.drawImage(img, 0, 0, W, H);
+  const d = g.getImageData(0, 0, W, H).data;
+  for (let i = 0; i < W * H; i++) mask[i] = d[4 * i + 2] > 2 * d[4 * i] ? 1 : 0;   // Earth.isWater
+}
+function loadImage(url) {
+  return new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = url; });
+}
+
+async function refreshList(selectName) {
+  const r = await fetch("/api/maps").then(r => r.json());
+  // Group custom maps by folder.
+  const groups = {};
+  for (const n of r.custom) {
+    const folder = n.includes("/") ? n.slice(0, n.lastIndexOf("/")) : "maps";
+    (groups[folder] = groups[folder] || []).push(n);
+  }
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  $("mapList").innerHTML =
+    Object.entries(groups).map(([folder, names]) =>
+      `<optgroup label="${esc(folder)}/">` + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("") + `</optgroup>`
+    ).join("") +
+    `<optgroup label="Scenario maps (templates)">` + r.real.map(n => `<option value="${n}">${n}</option>`).join("") + `</optgroup>`;
+  if (selectName) $("mapList").value = selectName;
+}
+async function loadMap(name) {
+  if (!name) return;
+  if (dirty && !confirm("Discard unsaved changes?")) return;
+  const m = await fetch("/api/map?name=" + encodeURIComponent(name)).then(r => r.json());
+  if (m.error) return setStatus(m.error, "bad");
+  pushUndo();
+  imageToMask(await loadImage(m.image));
+  ship = { x: m.ship[0], y: m.ship[1] };
+  piles = m.piles.map(([x, y, n]) => ({ x, y, n }));
+  $("name").value = m.real ? m.name + "_copy" : m.name;
+  $("mapList").value = m.name;
+  select(-1); maskChanged();
+  dirty = false;
+  history.replaceState(null, "", "?map=" + encodeURIComponent(m.name));
+  setStatus(`Loaded ${m.name}` + (m.real ? " (scenario map; save under a new name)" : ""), "good");
+}
+$("load").onclick = () => loadMap($("mapList").value);
+function stepMap(delta) {
+  const names = [...$("mapList").options].map(o => o.value);
+  const i = names.indexOf($("mapList").value);
+  const next = names[(i + delta + names.length) % names.length];
+  if (next) loadMap(next);
+}
+$("prevMap").onclick = () => stepMap(-1);
+$("nextMap").onclick = () => stepMap(1);
+$("save").onclick = async () => {
+  const name = $("name").value.trim();
+  if (!/^[A-Za-z0-9_-]{1,64}(\/[A-Za-z0-9_-]{1,64}){0,3}$/.test(name))
+    return setStatus("Name: letters, digits, - and _ (folders separated by /).", "bad");
+  if (!ship) return setStatus("Place the ship first.", "bad");
+  if (!piles.length) return setStatus("Add at least one pile.", "bad");
+  const existing = [...$("mapList").options].some(o => o.value === name);
+  if (existing && !confirm(`Overwrite maps/${name}?`)) return;
+  const r = await fetch("/api/save", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, png: maskToPng(), ship: [ship.x, ship.y], piles: piles.map(p => [p.x, p.y, p.n]) }),
+  }).then(r => r.json());
+  if (r.error) return setStatus(r.error, "bad");
+  dirty = false;
+  setStatus(`Saved ${r.saved}`, "good");
+  history.replaceState(null, "", "?map=" + encodeURIComponent(name));
+  refreshList(name);
+};
+$("new").onclick = () => {
+  if (dirty && !confirm("Discard unsaved changes?")) return;
+  pushUndo(); mask.fill(0); ship = null; piles = []; $("name").value = ""; select(-1); maskChanged();
+  dirty = false;
+  history.replaceState(null, "", location.pathname);
+};
+$("importButton").onclick = () => $("import").click();
+$("import").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  pushUndo(); imageToMask(await loadImage(URL.createObjectURL(f))); maskChanged();
+  setStatus(`Imported ${f.name} (water = blue > 2 × red)`, "good");
+  e.target.value = "";
+};
+
+setTool("brush");
+maskChanged();
+// ?map=<name> opens a map on startup.
+const startMap = new URLSearchParams(location.search).get("map");
+refreshList().then(() => { if (startMap) loadMap(startMap); });
+</script>
+</body>
+</html>

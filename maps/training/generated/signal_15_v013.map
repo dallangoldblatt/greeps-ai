@@ -1,0 +1,8 @@
+# Greeps map: random 3x3 room maze; the rich dead-end leaf is random
+image signal_15_v013.png
+ship 660 49
+pile 52 170 100
+pile 60 117 94
+pile 7 135 303
+pile 7 677 504
+pile 9 128 504

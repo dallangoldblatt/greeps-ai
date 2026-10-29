@@ -1,0 +1,7 @@
+# Greeps map: Meandering river with oxbow lakes as distractors; fords cross it, piles hidden in bends
+image terrain_08_v001.png
+ship 83 102
+pile 32 336 292
+pile 32 554 302
+pile 26 598 430
+pile 16 348 450

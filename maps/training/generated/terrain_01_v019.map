@@ -1,0 +1,7 @@
+# Greeps map: River splits the map; a single ford is the only crossing
+image terrain_01_v019.png
+ship 600 428
+pile 40 108 96
+pile 30 390 79
+pile 30 628 149
+pile 12 197 489

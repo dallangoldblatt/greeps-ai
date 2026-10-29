@@ -1,0 +1,6 @@
+# Greeps map: open ground: a rich far cluster in a random direction, small decoy piles in other directions
+image signal_12_v015.png
+ship 191 393
+pile 48 61 73
+pile 65 53 151
+pile 12 427 343

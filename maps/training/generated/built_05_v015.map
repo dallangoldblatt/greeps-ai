@@ -1,0 +1,7 @@
+# Greeps map: nested rectangular rings with gates on alternating sides, treasure in the innermost chamber
+image built_05_v015.png
+ship 752 284
+pile 50 399 299
+pile 50 681 256
+pile 30 225 440
+pile 16 613 181

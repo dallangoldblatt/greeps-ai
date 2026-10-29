@@ -1,0 +1,8 @@
+# Greeps map: serpentine switchback corridor, walls alternately open at each end, best pile at the far end
+image built_04.png
+ship 90 45
+pile 60 650 540
+pile 30 130 440
+pile 20 650 340
+pile 30 130 250
+pile 20 650 150

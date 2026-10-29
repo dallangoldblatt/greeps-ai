@@ -1,0 +1,6 @@
+# Greeps map: comb of 7 parallel inlets, the piles are in only one tooth
+image puzzle_09.png
+ship 70 300
+pile 40 735 390
+pile 30 690 390
+pile 30 640 390

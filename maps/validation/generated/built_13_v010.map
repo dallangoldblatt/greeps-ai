@@ -1,0 +1,9 @@
+# Greeps map: binary-tree corridors from the trunk; each branch splits and the piles sit at some leaf tips
+image built_13_v010.png
+ship 400 32
+pile 50 317 543
+pile 50 717 543
+pile 40 683 543
+pile 16 538 543
+pile 12 283 543
+pile 12 504 543

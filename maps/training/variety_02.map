@@ -1,0 +1,9 @@
+# Greeps map: Open field with the ship near the middle and the piles on a far rim around the edges
+image variety_02.png
+ship 405 247
+pile 26 235 53
+pile 39 56 314
+pile 32 62 506
+pile 21 472 557
+pile 22 593 56
+pile 18 46 37

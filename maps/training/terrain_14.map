@@ -1,0 +1,7 @@
+# Greeps map: Two landmasses joined by a long thin winding isthmus; richest piles on the far side
+image terrain_14.png
+ship 60 300
+pile 15 120 500
+pile 50 740 200
+pile 40 740 450
+pile 25 455 372

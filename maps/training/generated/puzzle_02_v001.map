@@ -1,0 +1,7 @@
+# Greeps map: two long walls with gaps at opposite ends: zig-zag detour to the far side
+image puzzle_02_v001.png
+ship 738 83
+pile 32 161 71
+pile 40 80 479
+pile 38 88 136
+pile 11 408 46

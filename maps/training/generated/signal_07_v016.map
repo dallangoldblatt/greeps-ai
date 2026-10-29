@@ -1,0 +1,5 @@
+# Greeps map: open ground with far piles in one random compass direction behind scattered obstacles
+image signal_07_v016.png
+ship 526 425
+pile 58 212 186
+pile 77 169 317

@@ -1,0 +1,7 @@
+# Greeps map: square spiral corridor from the outside inwards, richest pile at the very centre
+image built_09_v004.png
+ship 98 497
+pile 50 256 202
+pile 30 355 532
+pile 20 390 202
+pile 12 532 66

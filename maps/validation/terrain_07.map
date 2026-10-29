@@ -1,0 +1,7 @@
+# Greeps map: Canyon: a serpentine plateau path across water cliffs with one shortcut bridge
+image terrain_07.png
+ship 80 70
+pile 30 696 103
+pile 40 100 330
+pile 50 310 515
+pile 20 600 380

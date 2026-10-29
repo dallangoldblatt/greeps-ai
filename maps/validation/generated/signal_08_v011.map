@@ -1,0 +1,5 @@
+# Greeps map: ring road with a random pile site: go clockwise or anticlockwise, return may be shorter via a cross road
+image signal_08_v011.png
+ship 666 500
+pile 63 481 85
+pile 52 541 85

@@ -1,0 +1,8 @@
+# Greeps map: five fenced compounds each with one gate; every pile is inside a pen
+image built_12.png
+ship 400 480
+pile 30 150 125
+pile 12 425 110
+pile 40 680 160
+pile 20 160 415
+pile 50 655 450

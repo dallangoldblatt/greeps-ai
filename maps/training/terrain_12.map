@@ -1,0 +1,7 @@
+# Greeps map: Large lake with a creek cutting the east shore; the way round is the long way
+image terrain_12.png
+ship 150 520
+pile 40 700 150
+pile 50 700 450
+pile 25 400 60
+pile 12 70 90

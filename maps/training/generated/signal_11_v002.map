@@ -1,0 +1,7 @@
+# Greeps map: cross of corridors that each end in a T with two rooms: the rich room is 1 of 6-8
+image signal_11_v002.png
+ship 400 249
+pile 52 710 447
+pile 40 684 394
+pile 27 512 81
+pile 9 691 179

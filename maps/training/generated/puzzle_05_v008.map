@@ -1,0 +1,12 @@
+# Greeps map: one huge far pile versus several tiny piles nearby (greed vs distance)
+image puzzle_05_v008.png
+ship 70 479
+pile 72 638 98
+pile 5 337 464
+pile 5 644 338
+pile 5 319 306
+pile 5 50 326
+pile 5 222 311
+pile 5 178 539
+pile 5 158 188
+pile 5 172 453

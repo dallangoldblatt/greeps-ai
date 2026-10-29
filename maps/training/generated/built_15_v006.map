@@ -1,0 +1,9 @@
+# Greeps map: staggered brick-like wall segments forming a zigzag hall, ship at top centre
+image built_15_v006.png
+ship 591 40
+pile 50 47 567
+pile 50 642 577
+pile 40 392 487
+pile 30 292 407
+pile 10 292 237
+pile 10 247 27

@@ -1,0 +1,7 @@
+# Greeps map: Jagged coastline with bays and headlands; sea on the east, piles on far headlands
+image terrain_04.png
+ship 130 300
+pile 50 384 504
+pile 30 268 392
+pile 20 100 56
+pile 12 212 168

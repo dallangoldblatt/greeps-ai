@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Greenfoot Scenario",
+      "request": "launch",
+      "mainClass": "greenfoot.export.GreenfootScenarioApplication",
+      "args": "Greenfoot Earth",
+      "vmArgs": "--module-path=\"lib/javafx\" --add-modules=javafx.controls,javafx.fxml"
+    },
+    {
+      // Plays custom maps instead of Maps 1-3: a .map file, a folder of .map
+      // files (e.g. maps/validation), or several of either separated by commas.
+      // Paths are relative to the workspace folder.
+      "type": "java",
+      "name": "Run Greenfoot Scenario (custom maps)",
+      "request": "launch",
+      "mainClass": "greenfoot.export.GreenfootScenarioApplication",
+      "args": "Greenfoot Earth",
+      "cwd": "${workspaceFolder}",
+      "vmArgs": "--module-path=\"lib/javafx\" --add-modules=javafx.controls,javafx.fxml \"-Dgreeps.maps=${input:mapPath}\""
+    }
+  ],
+  "inputs": [
+    {
+      "id": "mapPath",
+      "type": "promptString",
+      "description": "Map file(s) or folder(s), comma-separated (e.g. maps/validation or maps/training/generated/built_01_v001.map)",
+      "default": "maps/validation"
+    }
+  ]
+}

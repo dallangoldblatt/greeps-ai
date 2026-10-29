@@ -1,0 +1,6 @@
+# Greeps map: decoy dead-end branches off a trunk; piles hide at the ends of only some
+image puzzle_04_v019.png
+ship 60 303
+pile 72 431 168
+pile 50 752 333
+pile 12 223 122

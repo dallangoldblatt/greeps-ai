@@ -1,0 +1,9 @@
+# Greeps map: ship on a donut island; one hidden gap in the ring, piles outside
+image puzzle_08_v012.png
+ship 445 249
+pile 20 88 43
+pile 17 760 138
+pile 34 144 267
+pile 17 755 352
+pile 14 130 430
+pile 30 646 514

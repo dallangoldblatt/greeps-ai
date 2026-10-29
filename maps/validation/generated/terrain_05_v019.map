@@ -1,0 +1,7 @@
+# Greeps map: Chain of lakes forms a wall; only one narrow gap between lakes lets greeps cross
+image terrain_05_v019.png
+ship 242 435
+pile 40 178 113
+pile 30 718 116
+pile 25 313 194
+pile 12 505 477

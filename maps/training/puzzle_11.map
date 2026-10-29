@@ -1,0 +1,6 @@
+# Greeps map: hidden room: walled chamber with a 50px entrance holds the best piles
+image puzzle_11.png
+ship 140 130
+pile 60 640 440
+pile 40 560 450
+pile 10 620 130

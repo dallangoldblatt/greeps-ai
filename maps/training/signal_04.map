@@ -1,0 +1,8 @@
+# Greeps map: trunk with 3 successive T-junctions, stubs up and down; the rich stub (1 of 7) is random
+image signal_04.png
+ship 714 256
+pile 60 524 458
+pile 68 567 485
+pile 5 380 118
+pile 5 93 320
+pile 9 360 476

@@ -1,0 +1,7 @@
+# Greeps map: ring road with 4-6 inward spur rooms; the rich spur and its side of the ring are random
+image signal_13_v009.png
+ship 169 500
+pile 51 399 360
+pile 55 430 400
+pile 7 611 374
+pile 5 588 203

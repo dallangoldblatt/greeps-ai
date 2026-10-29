@@ -1,0 +1,14 @@
+# Greeps map: A ring of small piles around the whole map with the ship in the middle
+image variety_10.png
+ship 340 353
+pile 9 727 324
+pile 18 564 494
+pile 8 445 515
+pile 18 268 526
+pile 15 106 387
+pile 14 117 280
+pile 8 153 128
+pile 14 299 69
+pile 19 433 140
+pile 11 587 122
+pile 10 701 248

@@ -1,0 +1,7 @@
+# Greeps map: binary tree of two turns: the rich leaf (1 of 4) needs the right turn at each junction
+image signal_03.png
+ship 709 290
+pile 53 97 65
+pile 72 129 105
+pile 31 105 505
+pile 5 122 395

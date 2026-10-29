@@ -1,0 +1,33 @@
+# Training runs, reports, caches and build output (python -m ... writes here)
+out/
+
+# Local notes and work-in-progress plans (not part of the project)
+claude/
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Greenfoot / Java build output (Greenfoot recompiles src/ itself)
+*.class
+*.ctxt
+# Written by every GUI run (Earth.java), read by greeps/java_sim.py
+training_score.txt
+# Optional local override of a Greep's weights (see policies/README.md)
+policy.weights
+
+# Not needed by the scenario or the tools (32 MB); everything runs without it
+lib/javafx/javafx-web-*.jar
+
+# Editors and OS
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Other assistants' local history
+.aider*
