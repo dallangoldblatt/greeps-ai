@@ -1,8 +1,8 @@
 """
 Map definitions: the scenario's three maps and custom map files.
 
-A custom map (written by tools/map_editor.py or tools/import_screenshots.py)
-is a .map text file next to an 800x600 image:
+A custom map (written by tools/map_editor.py) is a .map text file next to an
+800x600 image:
 
     image <file>.png        # water where blue > 2 * red (Earth.isWater)
     ship <x> <y>            # where the ship lands

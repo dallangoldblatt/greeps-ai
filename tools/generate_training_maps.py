@@ -11,19 +11,29 @@ tool runs all of them into maps/training/generated/ and checks the result.
 
 Training picks the variants up automatically: --custom-maps maps/training
 includes subfolders. Variants of the templates held out in maps/validation
-(tools/split_validation.py) are moved there.
+are moved there.
 """
 
 import argparse
+import shutil
 import subprocess
 import sys
 
 from greeps.paths import SCENARIO_DIR
-from tools.split_validation import VALIDATION, move_map
 
 
 GENERATORS = SCENARIO_DIR / "maps" / "training" / "generators"
 OUT = SCENARIO_DIR / "maps" / "training" / "generated"
+VALIDATION = SCENARIO_DIR / "maps" / "validation"
+
+
+def move_map(map_file, target_dir):
+    """Move a .map file and the image it names."""
+    image = next(line.split(None, 1)[1].strip() for line in map_file.read_text().splitlines()
+                 if line.startswith("image "))
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for path in (map_file, map_file.parent / image):
+        shutil.move(str(path), str(target_dir / path.name))
 
 
 def main():
@@ -42,7 +52,7 @@ def main():
         subprocess.run([sys.executable, str(script), "--variants", str(args.variants),
                         "--seed", str(args.seed), "--out", str(OUT)],
                        cwd=SCENARIO_DIR, check=True)
-    # Variants of held-out templates (tools/split_validation.py) belong to
+    # Variants of held-out templates (the maps in maps/validation) belong to
     # the validation set, never to training.
     for template in sorted(VALIDATION.glob("*.map")):
         for variant in sorted(OUT.glob(f"{template.stem}_v*.map")):
@@ -50,7 +60,7 @@ def main():
             if target.exists():
                 target.unlink()
                 (target.parent / target.with_suffix(".png").name).unlink(missing_ok=True)
-            move_map(variant, VALIDATION / "generated", dry_run=False)
+            move_map(variant, VALIDATION / "generated")
     print("Validating ...", flush=True)
     result = subprocess.run([sys.executable, "-m", "tools.check_maps", str(OUT)],
                             cwd=SCENARIO_DIR, capture_output=True, text=True)

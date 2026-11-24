@@ -1,16 +1,28 @@
 # Greeps AI
 
-Learning policies for [Greeps](https://www.greenfoot.org/files/greeps/competition-flyer.pdf),
-the Greenfoot programming competition: twenty identical aliens (greeps) must
-collect tomatoes and bring them to their ship, each seeing only its own spot on
-the map, with 8 bits of memory, 2 flags and paint as the only way to
+Reinforcement learning approaches for [Greeps](https://www.greenfoot.org/files/greeps/competition-flyer.pdf),
+the [Greenfoot](https://www.greenfoot.org/competition/greeps/index.html) programming competition:
+twenty identical aliens (the greeps) must collect tomatoes and bring them to their ship.
+Each greep can see only its own spot on the map, with 8 bits of memory, 2 flags, and paint as the only way to
 coordinate.
 
-This repo is meant to be read as well as run: each approach lives in its own
-folder with its Java policy, training code and notes, so they can be compared
-side by side, and new approaches can be added next to them.
+<p align="center">
+  <img src="docs/media/terrain_05_v008.webp" width="560"
+       alt="Greeps collecting tomatoes on a map with a chain of lakes, leaving orange paint along the route through the gap">
+  <br>
+</p>
+
+**Rules.** A competition entry may change only the greeps' behavior in `Greep.java`. Every approach
+in this repo is technically a valid entry: its trained weights are embedded in `Greep.java` as
+final strings so nothing external is needed.
 
 ## Layout
+
+The repo has three parts:
+- the original Greenfoot scenario in Java (`src/`), plus a headless runner;
+- a Python port of it that runs on the GPU with CUDA graphs, for fast
+  training (`greeps/torch_sim.py`);
+- scripts for training and evaluating policies (`policies/`, `tools/`).
 
 ```
 src/                  the Greenfoot scenario (open this in Greenfoot)
@@ -34,63 +46,95 @@ tools/                command-line tools
   map_editor.py       browser map editor (+ map_editor.html)
   check_maps.py       validate maps (reachability, 40 px gaps, thin water) + previews
   generate_training_maps.py   randomized variants of every map family
-  import_screenshots.py   screenshots of Greenfoot maps -> map files
-  sim_gap.py          compare one policy in the Java and GPU simulators
-  split_validation.py which map templates are held out for validation
+  render_episode.py   animate an episode (docs/media/render.ps1 makes the ones here)
 headless/             HeadlessGreeps.java: the scenario without the GUI
 lib/                  Greenfoot 3.7.0 and JavaFX 21 jars (Windows builds)
 maps/                 custom maps (.map, with .png previews)
   training/           60 hand-designed maps, generators/, 1200 generated/ variants
   validation/         15 held-out templates + 300 generated/ variants
 tests/                headless-vs-GUI and GPU-vs-Java parity tests
+docs/media/           the animations in this README
 out/                  build output and training runs (not versioned)
 ```
 
 **Maps.** Train on `maps/training`; compare methods and choose checkpoints
-on `maps/validation`. The validation templates and their variants never appear in training
-(`tools/split_validation.py`; `tools/generate_training_maps.py` keeps it so).
+on `maps/validation`. The validation templates (3 per family) and their variants never appear in training.
 
 ## Quick start
 
-Run everything from the repository root. You need Python 3.12
-(`pip install -r requirements.txt`; the GPU trainers need a CUDA build of
-PyTorch) and a JDK 21 or newer: `JAVA_HOME`, a `javac` on `PATH`, or the
-one bundled with VS Code's Java extension is found automatically
-(`greeps/java_sim.py`). The jars in `lib/` are the Windows builds of JavaFX
-21.0.3; on macOS or Linux replace `lib/javafx/*.jar` with your platform's
-(controls, fxml, graphics, base, media, swing). All of this was developed
-on Windows with an RTX 5070 Ti.
+Requirements:
+
+* Python 3.12: `pip install -r requirements.txt`
+* A CUDA build of PyTorch, for the GPU simulator and trainers
+* JDK 21 or newer
+
+The JDK is found through `JAVA_HOME`, `javac` on `PATH`, or VS Code's Java
+extension. `lib/` holds Windows builds of JavaFX 21.0.3; on macOS or Linux,
+replace `lib/javafx/*.jar` with your platform's. Developed on Windows with an
+RTX 5070 Ti. Run everything from the repository root.
+
+**Run a policy.** The scenario plays whatever is in `src/Greep.java`. Trained
+weights are embedded in each `Greep.java`, so any one of them is a complete,
+self-contained competition entry.
 
 ```powershell
-python -m tools.use_policy                    # which approach src/Greep.java plays
-python -m tools.use_policy linear_cma         # switch approach
-python -m tools.evaluate                      # score it: 64 seeds x Maps 1-3
-python -m tools.evaluate --gui                # ... and watch one run
-
-# Train paint_comm with the latest recipe (6 hours; the other scripts in
-# experiments/ are the comparisons in policies/paint_comm/README.md):
-powershell -File policies/paint_comm/experiments/2026-10-23_long_all.ps1
-python -m policies.paint_comm.export --run long_all
-
-python -m tools.paint_report --maps maps/validation  # how the active policy uses paint
-python -m tools.map_editor                    # draw maps, move ships and piles
-python -m unittest discover -s tests -v       # GREEPS_SKIP_GUI=1 skips the GUI test
+python -m tools.use_policy linear_cma         # copy policies/linear_cma/Greep.java to src/
+cp trained/paint_comm/Greep.java src/         # ... or copy in any Greep.java yourself
+python -m tools.evaluate                      # score src/Greep.java: 64 seeds x Maps 1-3
+python -m tools.evaluate --gui                # ... and watch one run in Greenfoot
 ```
 
-Trained weights are embedded in each approach's `Greep.java`, so whichever
-one is in `src/` is a complete, self-contained competition entry.
+**Tools.**
+
+```powershell
+python -m tools.map_editor                    # draw maps, move ships and piles
+python -m tools.check_maps maps/validation    # validate maps
+python -m tools.use_policy                    # check which approach src/Greep.java is
+python -m tools.evaluate --maps maps/validation      # score on given maps
+python -m tools.render_episode --policy paint_comm --map <file.map>  # animate an episode
+python -m tools.generate_training_maps --variants 20  # regenerate map variants
+python -m unittest discover -s tests -v       # run tests; GREEPS_SKIP_GUI=1 skips the GUI test
+```
+
+**Train.** paint_comm with the latest recipe (6 hours; the other scripts in
+`experiments/` are the comparisons in `policies/paint_comm/README.md`):
+
+```powershell
+powershell -File policies/paint_comm/experiments/2026-10-23_long_all.ps1
+python -m policies.paint_comm.export --run long_all
+```
 
 ## Results so far
 
-The scenario's Maps 1-3 in the real (Java) scenario, 64 seeds, and the 315
-validation maps on the GPU simulator, 8 episodes each; mean score per map.
+Each number is the mean score per map.
 
-| Approach | Map 1 | Map 2 | Map 3 | Maps 1-3 | Validation |
+- **Map 1-3:** the scenario's three built-in maps, run in the real Java
+  scenario over 64 seeds. **Total** is their sum.
+- **Validation:** 315 held-out maps, run on the GPU simulator with 8 episodes
+  per map.
+
+| Approach | Map 1 | Map 2 | Map 3 | Total | Validation |
 |---|---|---|---|---|---|
 | hand-written start (linear_cma's initial weights) | 19.7 | 13.1 | 0.0 | 32.8 | |
 | [linear_cma](policies/linear_cma/README.md) | 59.2 | 63.4 | 22.5 | **145.1** | 23.8 |
-| [mlp_ppo](policies/mlp_ppo/README.md) (first run) | 44.9 | 58.6 | 12.1 | 115.6 | 39.0 |
+| [mlp_ppo](policies/mlp_ppo/README.md) | 44.9 | 58.6 | 12.1 | 115.6 | 39.0 |
 | [paint_comm](policies/paint_comm/README.md) (`memory_st`) | 31.3 | 31.8 | 5.7 | 68.9 | **50.7** |
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/media/map1_linear_cma.webp" alt="linear_cma on Map 1"></td>
+    <td width="33%"><img src="docs/media/puzzle_07_v018.webp" alt="paint_comm on a map with mirror-image lakes"></td>
+    <td width="33%"><img src="docs/media/signal_05_v009.webp" alt="paint_comm on a map with four arms"></td>
+  </tr>
+  <tr>
+    <td><sub>linear_cma on Map 1, which it trained on: 61 tomatoes. It almost never spits paint.</sub></td>
+    <td><sub>paint_comm (colour curriculum) on mirror-image lakes: 161 of 166 tomatoes.</sub></td>
+    <td><sub>paint_comm on four arms whose piles run out at different times: 72 of 87.</sub></td>
+  </tr>
+</table>
+
+<sub>Real 120 s games on the GPU simulator; each animation is the median of 8 episodes
+(`tools/render_episode.py`).</sub>
 
 **Communication.** [paint_comm](policies/paint_comm/README.md) trains the
 same network with incentives for using paint, on generated maps only (never
@@ -100,6 +144,17 @@ score, mostly from *which* colour they read (carriers write orange along
 delivery routes, searching greeps write red or purple). On the generated
 validation maps it is the best approach by far; on Maps 1-3 it is the
 worst, even on Map 3, which none of them trained on.
+
+<p align="center">
+  <img src="docs/media/variety_06_v003_senses.webp" width="804"
+       alt="The same episode drawn as in Greenfoot and as the greeps sense it">
+  <br>
+  <sub>One paint_comm (colour curriculum) episode two ways, at half speed (81 of 99 tomatoes). Left: as Greenfoot draws it. Right:
+  what each greep senses of the others: the paint under it (dot colour, grey for none) and whether
+  it carries a tomato (white centre). The faint map is only for the viewer; a greep never sees it,
+  only whether it is touching water, food or the ship, its heading, the ship's direction and its
+  own 10 bits of memory.</sub>
+</p>
 
 See [policies/README.md](policies/README.md) for the per-map comparison and
 [trained/README.md](trained/README.md) for the best entry of each approach.

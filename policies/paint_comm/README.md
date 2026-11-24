@@ -210,7 +210,8 @@ mean per map:
   control's 49.6. In Java on Maps 1-3 it scores 68.9 against
   colour_stage2/best.pt's 75.3, which stays embedded in this folder's
   `Greep.java` ([trained/](../../trained/README.md) uses memory_st).
-* Chasing an apparent Java gap for this policy (`tools/sim_gap.py`) found a
+* Chasing an apparent Java gap for this policy (comparing its Java
+  observation trace with the GPU simulator) found a
   real simulator bug: the GPU sim's paint contact test used real-valued
   half-sizes and counted 5% more greep-drop contacts than Greenfoot, all at
   blob edges. It now reproduces Actor.intersects exactly (Java agrees on all
@@ -226,8 +227,8 @@ information of each bit with the situation).
 ## Credit, longer memory and exploration (`night2_*`, validation maps)
 
 From here on, checkpoints are chosen and methods compared on
-`maps/validation`: 15 templates (3 per family) and their 300 variants, moved
-out of training by `tools/split_validation.py`.
+`maps/validation`: 15 templates (3 per family) and their 300 variants, held
+out of training.
 
 Five 100-minute arms (~950 updates each) continued from `memory_st/latest.pt`
 with the same recipe, each changing one thing

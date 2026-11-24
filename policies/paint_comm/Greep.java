@@ -74,8 +74,8 @@ public class Greep extends Creature {
     private static final boolean PAINT_BLIND = Boolean.getBoolean("greeps.paintBlind");
     /**
      * Diagnostics only (-Dgreeps.obsTrace=<file>): one line per act with the
-     * observation, the sampled decisions and the paint drops nearby (used by
-     * tools/sim_gap.py to compare with the GPU simulator). Draws no random
+     * observation, the sampled decisions and the paint drops nearby (for
+     * comparing with the GPU simulator). Draws no random
      * numbers, so play is unchanged.
      */
     private static final String OBS_TRACE = System.getProperty("greeps.obsTrace");

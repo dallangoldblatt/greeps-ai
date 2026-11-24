@@ -18,9 +18,9 @@ Known differences from the Java simulation, all small:
     skipped (nothing else happens during it).
 
 The Java headless simulator stays the ground truth for evaluation; see
-tests/test_torch_sim.py for the statistical comparison, and tools/sim_gap.py
-for a per-mechanism comparison with a policy's Java trace (paint contacts
-agree with Greenfoot on all but ~1 in 100,000 greep-drop pairs).
+tests/test_torch_sim.py for the statistical comparison (compared against a
+policy's Java trace, paint contacts agree with Greenfoot on all but ~1 in
+100,000 greep-drop pairs).
 
 One episode is one map. A tick is one Greenfoot act round:
 
@@ -220,7 +220,7 @@ def touches_paint(tables, shape, x, y, rot, paint_x, paint_y, exact=True):
     """
     # Actor.intersects, specialised to an unrotated square drop so each pair
     # costs a few integer comparisons. Real-valued half-sizes (used before)
-    # counted 5% more contacts than Greenfoot; see tools/sim_gap.py.
+    # counted 5% more contacts than Greenfoot.
     half = PAINT_SIZE // 2                  # drop corners at paint_x +- half
     paint = box_shape(paint_x, paint_y, PAINT_SIZE, PAINT_SIZE)
     hit = _rects_overlap(shape, paint)
