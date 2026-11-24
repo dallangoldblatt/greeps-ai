@@ -159,7 +159,7 @@ worst, even on Map 3, which none of them trained on.
 See [policies/README.md](policies/README.md) for the per-map comparison and
 [trained/README.md](trained/README.md) for the best entry of each approach.
 
-## Open problems (help welcome)
+## Open problems
 
 The full experiment log is in [policies/paint_comm/README.md](policies/paint_comm/README.md).
 In short:
@@ -175,16 +175,7 @@ In short:
   How much is reachable in 120 s is unknown.
 * **Generated maps rank the approaches differently from the scenario's
   Maps 1-3** (see the table above). Something about the generated maps
-  differs in a way that matters.
-* **Ideas not yet tried:** training from scratch with trainable memory and
-  several seeds (every run so far descends from one early protocol);
-  starting from a strong collector and adding communication; rewarding each
-  paint drop by its counterfactual effect on the other greeps' returns; a
-  full-observation teacher to measure the ceiling.
-* **Constraint:** each greep keeps only the game's 8 memory bits + 2 flags
-  between ticks; paint is the only shared channel. Training may use anything
-  (privileged critic, auxiliary heads), as long as the deployed actor sees
-  only what one greep may legally see.
+  does not capture the difficulty of the competetion maps.
 
 ## Two simulators
 
